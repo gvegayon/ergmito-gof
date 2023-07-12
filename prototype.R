@@ -107,7 +107,7 @@ namer <- function(x) {
     edges = "Edge count",
     ttriple = "Transitive Triads",
     mutual = "Mutual Ties",
-    nodeicov.gender = "Gender-Receiver Effect",
+    nodeicov.gender = "Gender-Receiver",
     nodematch.gender = "Gender-Homophily"
   )
 }
@@ -172,7 +172,7 @@ plot_first <- function(x, main="", ...) {
     plot(x[[i]], ...)
     if (i == 1L) {
       op <- par(xpd=NA)
-      # title(main = main, line = 1.25, font.main = 1, cex.main = 1.5)
+      title(main = main, line = 1.25, font.main = 1, cex.main = 1.5, adj = 0)
       par(op)
     }
   }
@@ -190,10 +190,10 @@ set.vertex.attribute(x, "gender", c(0,1,0,1,0))
 
 # General plotting parameters
 parpar <- list(
-  mfcol = c(2, 4), mar = c(4,2.5,.5,1.5), oma = c(0,2,2.25,0)
+  mfcol = c(2, 4), mar = c(4,2,.5,1.5), oma = c(0,3.5,2.25,0)
 )
-width. <- 7
-height. <- 3.5
+width. <- 7 * .9
+height. <- 3.5 * .9
 
 
 # Mutual --------------------------------------
@@ -208,12 +208,12 @@ ans_same <- lapply(models_mutual, conditional_dist, theta = c(0, 0))
 ans_diff <- lapply(models_mutual, conditional_dist, theta = c(2, 0))
 
 graphics.off()
-svg("conditional-prob-mutuals.svg", width = width., height = height.)
+pdf("conditional-prob-mutuals.pdf", width = width., height = height.)
 op <- do.call(par, parpar)
-plot_first(ans_same, main = "(a)")
-plot_first(ans_diff, main = "(b)")
+plot_first(ans_same, main = mtext( bquote( (a)~theta[mutual] == 0 )) )
+plot_first(ans_diff, main = mtext( bquote( (b)~theta[mutual] == 2 )) )
 par(op)
-title(ylab = "Number of Mutual ties")
+title(ylab = c("Number of", "Mutual ties"))
 dev.off()
 
 # Triads --------------------------------------
@@ -228,12 +228,12 @@ ans_same <- lapply(models_ttriad, conditional_dist, theta = c(0, 0))
 ans_diff <- lapply(models_ttriad, conditional_dist, theta = c(1, 0))
 
 graphics.off()
-svg("conditional-prob-ttriad.svg", width = width., height = height.)
+pdf("conditional-prob-ttriad.pdf", width = width., height = height.)
 op <- do.call(par, parpar)
-plot_first(ans_same, main = "(a)")
-plot_first(ans_diff, main = "(b)")
+plot_first(ans_same, main = mtext( bquote( (a)~theta[ttriad] == 0 )) )
+plot_first(ans_diff, main = mtext( bquote( (b)~theta[ttriad] == 1 )) )
 par(op)
-title(ylab = "Number of Transitive Triads")
+title(ylab = c("Number of", "Transitive Triads"))
 dev.off()
 
 # Gender homophily --------------------------------------
@@ -248,12 +248,12 @@ ans_same <- lapply(models_homophily, conditional_dist, theta = c(0, 0))
 ans_diff <- lapply(models_homophily, conditional_dist, theta = c(2, 0))
 
 graphics.off()
-svg("conditional-prob-homophily.svg", width = width., height = height.)
+pdf("conditional-prob-homophily.pdf", width = width., height = height.)
 op <- do.call(par, parpar)
-plot_first(ans_same, main = "(a)")
-plot_first(ans_diff, main = "(b)")
+plot_first(ans_same, main = mtext( bquote( (a)~theta[homophily] == 0 )) )
+plot_first(ans_diff, main = mtext( bquote( (b)~theta[homophily] == 2 )) )
 par(op)
-title(ylab = "Number of Gender-Homophilic Ties")
+title(ylab = c("Number of", "Gender-Homophilic Ties"))
 dev.off()
 
 # Gender homophily --------------------------------------
@@ -268,10 +268,10 @@ ans_same <- lapply(models_icov, conditional_dist, theta = c(0, 0))
 ans_diff <- lapply(models_icov, conditional_dist, theta = c(2, 0))
 
 graphics.off()
-svg("conditional-prob-receiver-effect.svg", width = width., height = height.)
+pdf("conditional-prob-receiver-effect.pdf", width = width., height = height.)
 op <- do.call(par, parpar)
-plot_first(ans_same, main = "(a)")
-plot_first(ans_diff, main = "(b)")
+plot_first(ans_same, main = mtext( bquote( (a)~theta[receiver] == 0 )) )
+plot_first(ans_diff, main = mtext( bquote( (b)~theta[receiver] == 2 )) )
 par(op)
 title(ylab = "Gender-Receiver Effect")
 dev.off()
