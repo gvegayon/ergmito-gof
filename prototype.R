@@ -107,8 +107,8 @@ namer <- function(x) {
     edges = "Edge count",
     ttriple = "Transitive Triads",
     mutual = "Mutual Ties",
-    nodeicov.gender = "Gender Receiver Effect",
-    nodematch.gender = "Gender Homophily"
+    nodeicov.gender = "Gender-Receiver Effect",
+    nodematch.gender = "Gender-Homophily"
   )
 }
 
@@ -116,8 +116,13 @@ namer <- function(x) {
 #' @noRd
 plot.ergm_conditional <- function(x, xlab = namer(x$par_names[2]), ylab = namer(x$par_names[1]), ...) {
   
+  # scaler <- function(a) {
+  #   (a - min(x$b))/diff(range(x$b))
+  # }
+  scaler <- function(a) a
+  
   y_range <- range(x$a)
-  x_range <- range(x$b)
+  x_range <- scaler(range(x$b))
   
   # # Border
   # dat <- data.frame(
@@ -139,10 +144,10 @@ plot.ergm_conditional <- function(x, xlab = namer(x$par_names[2]), ylab = namer(
   op <- graphics::par(xpd = FALSE)
   graphics::grid()
   graphics::par(op)
-
+  
   # Drawing a polygon
   graphics::polygon(
-    x = c(x$b, rev(x$b)),
+    x = scaler(c(x$b, rev(x$b))),
     y = c(x$quantile[,1], rev(x$quantile[,3])),
     col = "lightgray",
     border = "darkgray"
@@ -151,11 +156,11 @@ plot.ergm_conditional <- function(x, xlab = namer(x$par_names[2]), ylab = namer(
   
   lines(
     y    = x$quantiles[,2],
-    x    = x$b,
+    x    = scaler(x$b),
     type = "l", col = "red", lwd = 2, lty = 2
   )
   
-  abline(v = x$b_50pcent, lty = 2, lwd = 2)
+  # abline(v = x$b_50pcent, lty = 2, lwd = 2)
   
   return()
   
@@ -167,7 +172,7 @@ plot_first <- function(x, main="", ...) {
     plot(x[[i]], ...)
     if (i == 1L) {
       op <- par(xpd=NA)
-      title(main = main, line = 1.25, font.main = 1, cex.main = 1.5)
+      # title(main = main, line = 1.25, font.main = 1, cex.main = 1.5)
       par(op)
     }
   }
@@ -185,8 +190,10 @@ set.vertex.attribute(x, "gender", c(0,1,0,1,0))
 
 # General plotting parameters
 parpar <- list(
-  mfcol = c(4, 2), mar = c(5,2.5,.5,1.5), oma = c(0,2,2.25,0)
+  mfcol = c(2, 4), mar = c(4,2.5,.5,1.5), oma = c(0,2,2.25,0)
 )
+width. <- 7
+height. <- 3.5
 
 
 # Mutual --------------------------------------
@@ -197,11 +204,11 @@ models_mutual <- list(
   x ~ mutual + nodeicov("gender")
 )
 
-ans_same <- lapply(models_mutual, conditional_dist, theta = c(0, .5))
-ans_diff <- lapply(models_mutual, conditional_dist, theta = c(1, .5))
+ans_same <- lapply(models_mutual, conditional_dist, theta = c(0, 0))
+ans_diff <- lapply(models_mutual, conditional_dist, theta = c(2, 0))
 
 graphics.off()
-pdf("conditional-prob-mutuals.pdf", width = 5, height = 7)
+svg("conditional-prob-mutuals.svg", width = width., height = height.)
 op <- do.call(par, parpar)
 plot_first(ans_same, main = "(a)")
 plot_first(ans_diff, main = "(b)")
@@ -221,7 +228,7 @@ ans_same <- lapply(models_ttriad, conditional_dist, theta = c(0, 0))
 ans_diff <- lapply(models_ttriad, conditional_dist, theta = c(1, 0))
 
 graphics.off()
-pdf("conditional-prob-ttriad.pdf", width = 5, height = 7)
+svg("conditional-prob-ttriad.svg", width = width., height = height.)
 op <- do.call(par, parpar)
 plot_first(ans_same, main = "(a)")
 plot_first(ans_diff, main = "(b)")
@@ -238,17 +245,34 @@ models_homophily <- list(
 )
 
 ans_same <- lapply(models_homophily, conditional_dist, theta = c(0, 0))
-ans_diff <- lapply(models_homophily, conditional_dist, theta = c(1, 0))
+ans_diff <- lapply(models_homophily, conditional_dist, theta = c(2, 0))
 
 graphics.off()
-pdf("conditional-prob-homophily.pdf", width = 5, height = 7)
+svg("conditional-prob-homophily.svg", width = width., height = height.)
 op <- do.call(par, parpar)
 plot_first(ans_same, main = "(a)")
 plot_first(ans_diff, main = "(b)")
 par(op)
-title(ylab = "Number of Homophilic Ties")
-# par(mfrow = c(4, 2), new = FALSE)
-# plot.new()
-# plot.window(c(0,1), c(0,1))
-# title(xlab = "a")
+title(ylab = "Number of Gender-Homophilic Ties")
 dev.off()
+
+# Gender homophily --------------------------------------
+models_icov <- list(
+  x ~ nodeicov("gender") + edges,
+  x ~ nodeicov("gender") + mutual,
+  x ~ nodeicov("gender") + ttriad,
+  x ~ nodeicov("gender") + nodematch("gender")
+)
+
+ans_same <- lapply(models_icov, conditional_dist, theta = c(0, 0))
+ans_diff <- lapply(models_icov, conditional_dist, theta = c(2, 0))
+
+graphics.off()
+svg("conditional-prob-receiver-effect.svg", width = width., height = height.)
+op <- do.call(par, parpar)
+plot_first(ans_same, main = "(a)")
+plot_first(ans_diff, main = "(b)")
+par(op)
+title(ylab = "Gender-Receiver Effect")
+dev.off()
+
